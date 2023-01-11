@@ -2,15 +2,20 @@ import express from 'express';
 import cors from 'cors';
 
 import suppliers from './routes/suppliers';
+import products from './routes/products';
+import orders from './routes/orders';
+import employees from './routes/employees';
+import customers from './routes/customers';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.use('/suppliers', suppliers);
-// app.get('/', (req, res) => {
-//   res.send('Hello World!');
-// });
+app.use('/products', products);
+app.use('/orders', orders);
+app.use('/employees', employees);
+app.use('/customers', customers);
 
 app.use((_, res) => {
   res.status(404).json({ message: 'Not found' });
