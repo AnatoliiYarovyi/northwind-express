@@ -9,12 +9,13 @@ export class Employees {
     this.db = db;
   }
 
-  async getAllEmployees(limit: number, offset: number) {
+  async getAllEmployees(limit: number, page: number) {
     const sqlString = `SELECT EmployeeID AS Id, FirstName AS Name, LastName, Title, City, HomePhone AS Phone, Country  
 FROM Employees
 LIMIT ?
 OFFSET ?;`;
 
+    const offset: number = (page - 1) * limit;
     const data = await this.db
       .select(employees)
       .fields({

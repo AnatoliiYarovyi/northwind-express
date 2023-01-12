@@ -13,7 +13,7 @@ export class Orders {
     this.db = db;
   }
 
-  async getAllOrders(limit: number, offset: number) {
+  async getAllOrders(limit: number, page: number) {
     const sqlString = `SELECT o.OrderID AS Id, (od.Quantity * p.UnitPrice) AS 'Total Price', od.ProductID AS Products, od.Quantity AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
@@ -21,6 +21,7 @@ JOIN Products AS p ON od.ProductID = p.ProductID
 LIMIT ?
 OFFSET ?;`;
 
+    const offset: number = (page - 1) * limit;
     const data = await this.db
       .select(orders)
       .fields({

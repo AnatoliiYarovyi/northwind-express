@@ -10,11 +10,13 @@ export class Suppliers {
     this.db = db;
   }
 
-  async getAllSuppliers(limit: number, offset: number) {
+  async getAllSuppliers(limit: number, page: number) {
     const sqlString = `SELECT SupplierID AS Id, CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, City, Country 
 FROM Suppliers
 LIMIT ?
 OFFSET ?;`;
+
+    const offset: number = (page - 1) * limit;
     const data = await this.db
       .select(suppliers)
       .fields({
@@ -36,6 +38,7 @@ OFFSET ?;`;
     const sqlString = `SELECT SupplierID AS Id, CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, Address, City, Region, PostalCode AS 'Postal Code', Country, Phone 
 FROM Suppliers
 WHERE SupplierID = ?;`;
+
     const data = await this.db
       .select(suppliers)
       .fields({

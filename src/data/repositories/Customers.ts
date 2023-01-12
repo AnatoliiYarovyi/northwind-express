@@ -9,12 +9,13 @@ export class Customers {
     this.db = db;
   }
 
-  async getAllCustomers(limit: number, offset: number) {
+  async getAllCustomers(limit: number, page: number) {
     const sqlString = `SELECT CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, City, Country 
 FROM Customers
 LIMIT ?
 OFFSET ?;`;
 
+    const offset: number = (page - 1) * limit;
     const data = await this.db
       .select(customers)
       .fields({
