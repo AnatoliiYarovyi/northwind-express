@@ -6,10 +6,10 @@ import { Suppliers } from '../data/repositories/Suppliers';
 export class CtrlSuppliers {
   async getAllSuppliers(req: Request, res, next) {
     const db: BetterSQLite3Database = req.body.connection;
-    const { limit, offset } = req.query;
+    const { limit, page } = req.query;
 
     const suppliers = new Suppliers(db);
-    const data = await suppliers.getAllSuppliers(+limit, +offset);
+    const data = await suppliers.getAllSuppliers(+limit, +page);
 
     res.status(200).json({
       status: 'success',
