@@ -5,8 +5,13 @@ import { Employees } from '../data/repositories/Employees';
 export class CtrlEmployees {
   async getAllEmployees(req, res, next) {
     const db: BetterSQLite3Database = req.body.connection;
+    const { limit, offset } = req.query;
+
     const employees = new Employees(db);
-    const { sqlString, data } = await employees.getAllEmployees();
+    const { sqlString, data } = await employees.getAllEmployees(
+      +limit,
+      +offset,
+    );
 
     const changedName = data.reduce((acc, el) => {
       acc.push({
