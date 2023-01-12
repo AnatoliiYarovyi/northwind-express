@@ -10,7 +10,7 @@ export class Customers {
   }
 
   async getAllCustomers(limit: number, page: number) {
-    const sqlString = `SELECT CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, City, Country 
+    const sqlString = `SELECT CustomerId AS Id, CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, City, Country 
 FROM Customers
 LIMIT ?
 OFFSET ?;`;
@@ -19,6 +19,7 @@ OFFSET ?;`;
     const data = await this.db
       .select(customers)
       .fields({
+        Id: customers.customerId,
         Company: customers.companyName,
         Contact: customers.contactName,
         Title: customers.contactTitle,
