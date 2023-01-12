@@ -13,11 +13,14 @@ export class Orders {
     this.db = db;
   }
 
-  async getAllOrders() {
+  async getAllOrders(limit: number, offset: number) {
     const sqlString = `SELECT o.OrderID AS Id, (od.Quantity * p.UnitPrice) AS 'Total Price', od.ProductID AS Products, od.Quantity AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
-JOIN Products AS p ON od.ProductID = p.ProductID;`;
+JOIN Products AS p ON od.ProductID = p.ProductID
+LIMIT ?
+OFFSET ?;`;
+
     const data = await this.db
       .select(orders)
       .fields({
@@ -33,6 +36,8 @@ JOIN Products AS p ON od.ProductID = p.ProductID;`;
       })
       .leftJoin(orderDetails, eq(orders.orderId, orderDetails.orderId))
       .leftJoin(products, eq(orderDetails.productId, products.productId))
+      .limit(limit)
+      .offset(offset)
       .all();
 
     return { sqlString, data };
