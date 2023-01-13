@@ -12,12 +12,12 @@ export class Products {
   }
 
   async getAllProducts(limit: number, page: number) {
+    const offset: number = (page - 1) * limit;
     const sqlString = `SELECT ProductID AS Id, ProductName AS Name, QuantityPerUnit AS 'Qt per unit', UnitPrice AS Price, UnitsInStock AS Stock, UnitsOnOrder AS Orders 
 FROM Products
-LIMIT ?
-OFFSET ?;`;
+LIMIT ${limit}
+OFFSET ${offset};`;
 
-    const offset: number = (page - 1) * limit;
     const data = await this.db
       .select(products)
       .fields({
