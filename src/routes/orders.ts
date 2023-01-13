@@ -7,5 +7,6 @@ import { CtrlOrders } from '../controllers/CtrlOrders';
 const ctrl = new CtrlOrders();
 
 router.get('/', connectingToDb, controllerWrapper(ctrl.getAllOrders));
+router.get('/:id', connectingToDb, controllerWrapper(ctrl.getOrderById));
 
 export default router;
