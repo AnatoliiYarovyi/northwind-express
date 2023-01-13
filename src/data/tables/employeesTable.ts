@@ -1,7 +1,7 @@
 import { InferModel, integer, sqliteTable, text } from 'drizzle-orm-sqlite';
 
 export const employees = sqliteTable('Employees', {
-  employeeId: integer('EmployeeID').primaryKey(),
+  employeeId: text('EmployeeID').primaryKey(),
   lastName: text('LastName'),
   firstName: text('FirstName'),
   title: text('Title'),
