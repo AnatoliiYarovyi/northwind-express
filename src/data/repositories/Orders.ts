@@ -15,14 +15,14 @@ export class Orders {
   }
 
   async getAllOrders(limit: number, page: number) {
+    const offset: number = (page - 1) * limit;
     const sqlString = `SELECT o.OrderID AS Id, (od.Quantity * p.UnitPrice) AS 'Total Price', od.ProductID AS Products, od.Quantity AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
 JOIN Products AS p ON od.ProductID = p.ProductID
-LIMIT ?
-OFFSET ?;`;
+LIMIT ${limit}
+OFFSET ${offset};`;
 
-    const offset: number = (page - 1) * limit;
     const data = await this.db
       .select(orders)
       .fields({
@@ -55,9 +55,9 @@ FROM Orders AS o
 JOIN Shippers AS s ON o.ShipVia = s.ShipperID  
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
 JOIN Products AS p ON od.ProductID = p.ProductID
-WHERE Id = 10248;`;
+WHERE Id = ${id};`;
 
-    const dataOrderInformation = await this.db
+    const data = await this.db
       .select(orders)
       .fields({
         Id: sql`count(${orders.orderId})`,
@@ -85,7 +85,7 @@ WHERE Id = 10248;`;
       .where(eq(orders.orderId, id))
       .all();
 
-    return { sqlString, dataOrderInformation };
+    return { sqlString, data };
   }
 
   async productsInOrderById(id: number) {
@@ -94,9 +94,9 @@ WHERE Id = 10248;`;
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
 JOIN Products AS p ON od.ProductID = p.ProductID
-WHERE o.OrderID = 10248;`;
+WHERE o.OrderID = ${id};`;
 
-    const dataProducts = await this.db
+    const data = await this.db
       .select(orders)
       .fields({
         Id: orders.orderId,
@@ -113,6 +113,6 @@ WHERE o.OrderID = 10248;`;
       .where(eq(orders.orderId, id))
       .all();
 
-    return { sqlString, dataProducts };
+    return { sqlString, data };
   }
 }
