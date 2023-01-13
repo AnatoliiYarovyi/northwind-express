@@ -78,8 +78,6 @@ WHERE EmployeeID = ${id};`;
       .where(eq(employees.employeeId, id))
       .all();
 
-    console.log('data', data);
-
     return { sqlString, data };
   }
 
