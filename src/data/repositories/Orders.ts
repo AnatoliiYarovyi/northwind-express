@@ -89,12 +89,12 @@ WHERE Id = ${id};`;
   }
 
   async productsInOrderById(id: number) {
-    const sqlString = `SELECT o.OrderID AS OrderId, p.ProductID AS ProductID, p.ProductName AS Product, od.Quantity AS Quantity, p.UnitPrice AS 'Order Price', 
-(od.Quantity * p.UnitPrice* (1 - od.Discount)) AS 'Total Price', (100 * od.Discount) AS Discount
-FROM Orders AS o
-JOIN OrderDetails AS od ON o.OrderID = od.OrderID
-JOIN Products AS p ON od.ProductID = p.ProductID
-WHERE o.OrderID = ${id};`;
+    const sqlString = `SELECT em.EmployeeID AS Id, em.FirstName, em.LastName, em.Title, em.TitleOfCourtesy AS 'Title Of Courtesy', em.BirthDate AS 'Birth Date', 
+em.HireDate AS 'Hire Date', em.Address, em.City, em.PostalCode AS 'Postal Code', em.Country, em.HomePhone AS 'Home Phone', em.Extension, em.Notes, 
+em.ReportsTo AS 'Reports To', e.EmployeeID AS ReportEmployeeID, e.FirstName AS ReportFirstName, e.LastName AS ReportLastName
+FROM Employees AS em
+JOIN Employees AS e ON em.ReportsTo= e.EmployeeID  
+WHERE em.EmployeeID = ${id};`;
 
     const data = await this.db
       .select(orders)
