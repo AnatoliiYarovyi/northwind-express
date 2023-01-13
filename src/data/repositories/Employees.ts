@@ -1,4 +1,5 @@
 import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
+import { eq } from 'drizzle-orm/expressions';
 
 import { employees } from '../tables/employeesTable';
 
@@ -32,5 +33,56 @@ OFFSET ${offset};`;
       .all();
 
     return { sqlString, data };
+  }
+
+  async getEmployeeById(id: string) {
+    const sqlString = `SELECT EmployeeID AS Id, FirstName, LastName, Title, TitleOfCourtesy AS 'Title Of Courtesy', BirthDate AS 'Birth Date', 
+HireDate AS 'Hire Date', Address, City, PostalCode AS 'Postal Code', Country, HomePhone AS 'Home Phone', Extension, Notes, 
+(SELECT FirstName FROM Employees WHERE ReportsTo = EmployeeID) AS 'Reports To'
+FROM Employees 
+WHERE EmployeeID = ${id};`;
+
+    const data = await this.db
+      .select(employees)
+      .fields({
+        Id: employees.employeeId,
+        FirstName: employees.firstName,
+        LastName: employees.lastName,
+        Title: employees.title,
+        'Title Of Courtesy': employees.titleOfCourtesy,
+        'Birth Date': employees.birthDate,
+        'Hire Date': employees.hireDate,
+        Address: employees.address,
+        City: employees.city,
+        'Postal Code': employees.postalCode,
+        Country: employees.country,
+        'Home Phone': employees.homePhone,
+        Extension: employees.extension,
+        Notes: employees.notes,
+        ReportsTo: employees.reportsTo,
+      })
+      .where(eq(employees.employeeId, id))
+      .all();
+
+    console.log('data', data);
+
+    return { sqlString, data };
+  }
+
+  async getEmployeeAcceptsReport(id: number) {
+    const sqlString = `SELECT EmployeeID AS Id, FirstName, LastName 
+FROM Employees
+WHERE EmployeeID = ${id};`;
+    const employeeAcceptsReport = await this.db
+      .select(employees)
+      .fields({
+        Id: employees.employeeId,
+        FirstName: employees.firstName,
+        LastName: employees.lastName,
+      })
+      .where(eq(employees.employeeId, `${id}`))
+      .all();
+
+    return { sqlString, employeeAcceptsReport };
   }
 }
