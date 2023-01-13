@@ -4,11 +4,23 @@ import { Request } from 'express';
 import { Employees } from '../data/repositories/Employees';
 
 export class CtrlEmployees {
+  async getRowCount(req: Request, res, next) {
+    const db: BetterSQLite3Database = req.body.connection;
+    const employees = new Employees(db);
+
+    const data = await employees.getRowCount();
+
+    res.status(200).json({
+      status: 'success',
+      data,
+    });
+  }
+
   async getAllEmployees(req: Request, res, next) {
     const db: BetterSQLite3Database = req.body.connection;
+    const employees = new Employees(db);
     const { limit, page } = req.query;
 
-    const employees = new Employees(db);
     const { sqlString, data } = await employees.getAllEmployees(+limit, +page);
 
     const changedName = data.reduce((acc, el) => {

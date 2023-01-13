@@ -4,6 +4,18 @@ import { Request } from 'express';
 import { Orders } from '../data/repositories/Orders';
 
 export class CtrlOrders {
+  async getRowCount(req: Request, res, next) {
+    const db: BetterSQLite3Database = req.body.connection;
+    const employees = new Orders(db);
+
+    const data = await employees.getRowCount();
+
+    res.status(200).json({
+      status: 'success',
+      data,
+    });
+  }
+
   async getAllOrders(req: Request, res, next) {
     const db: BetterSQLite3Database = req.body.connection;
     const orders = new Orders(db);

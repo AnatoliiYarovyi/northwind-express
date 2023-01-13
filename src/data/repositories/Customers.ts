@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { eq } from 'drizzle-orm/expressions';
 
@@ -8,6 +9,19 @@ export class Customers {
 
   constructor(db: BetterSQLite3Database) {
     this.db = db;
+  }
+
+  async getRowCount() {
+    const sqlString = `SELECT COUNT(*)
+FROM Customers;`;
+    const data = await this.db
+      .select(customers)
+      .fields({
+        RowCount: sql`count(${customers.customerId})`.as<number>(),
+      })
+      .all();
+
+    return { sqlString, data };
   }
 
   async getAllCustomers(limit: number, page: number) {

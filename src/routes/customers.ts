@@ -7,6 +7,7 @@ import { CtrlCustomers } from '../controllers/CtrlCustomers';
 const ctrl = new CtrlCustomers();
 
 router.get('/', connectingToDb, controllerWrapper(ctrl.getAllCustomers));
+router.get('/rowCount', connectingToDb, controllerWrapper(ctrl.getRowCount));
 router.get('/:id', connectingToDb, controllerWrapper(ctrl.getCustomerById));
 
 export default router;

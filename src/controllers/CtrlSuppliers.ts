@@ -4,11 +4,23 @@ import { Request } from 'express';
 import { Suppliers } from '../data/repositories/Suppliers';
 
 export class CtrlSuppliers {
+  async getRowCount(req: Request, res, next) {
+    const db: BetterSQLite3Database = req.body.connection;
+    const employees = new Suppliers(db);
+
+    const data = await employees.getRowCount();
+
+    res.status(200).json({
+      status: 'success',
+      data,
+    });
+  }
+
   async getAllSuppliers(req: Request, res, next) {
     const db: BetterSQLite3Database = req.body.connection;
+    const suppliers = new Suppliers(db);
     const { limit, page } = req.query;
 
-    const suppliers = new Suppliers(db);
     const data = await suppliers.getAllSuppliers(+limit, +page);
 
     res.status(200).json({
@@ -19,8 +31,9 @@ export class CtrlSuppliers {
 
   async getSupplierById(req: Request, res, next) {
     const db: BetterSQLite3Database = req.body.connection;
-    const { id } = req.params;
     const suppliers = new Suppliers(db);
+    const { id } = req.params;
+
     const data = await suppliers.getSupplierById(+id);
 
     res.status(200).json({

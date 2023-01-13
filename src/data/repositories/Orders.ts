@@ -14,6 +14,19 @@ export class Orders {
     this.db = db;
   }
 
+  async getRowCount() {
+    const sqlString = `SELECT COUNT(*)
+FROM Orders;`;
+    const data = await this.db
+      .select(orders)
+      .fields({
+        RowCount: sql`count(${orders.orderId})`.as<number>(),
+      })
+      .all();
+
+    return { sqlString, data };
+  }
+
   async getAllOrders(limit: number, page: number) {
     const offset: number = (page - 1) * limit;
     const sqlString = `SELECT o.OrderID AS Id, (od.Quantity * p.UnitPrice) AS 'Total Price', od.ProductID AS Products, od.Quantity AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country

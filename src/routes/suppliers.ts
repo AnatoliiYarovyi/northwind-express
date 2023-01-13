@@ -7,6 +7,7 @@ import { CtrlSuppliers } from '../controllers/CtrlSuppliers';
 const ctrl = new CtrlSuppliers();
 
 router.get('/', connectingToDb, controllerWrapper(ctrl.getAllSuppliers));
+router.get('/rowCount', connectingToDb, controllerWrapper(ctrl.getRowCount));
 router.get('/:id', connectingToDb, controllerWrapper(ctrl.getSupplierById));
 
 export default router;
