@@ -51,9 +51,9 @@ export class CtrlEmployees {
 
     const { sqlString, data } = await employees.getEmployeeById(id);
 
-    const { ReportsTo } = data[0];
+    const { ReportsToId } = data[0];
     const { employeeAcceptsReport } = await employees.getEmployeeAcceptsReport(
-      ReportsTo,
+      ReportsToId,
     );
 
     const changedName = data.reduce((acc, el) => {
@@ -71,7 +71,7 @@ export class CtrlEmployees {
         'Home Phone': el['Home Phone'],
         Extension: el.Extension,
         Notes: el.Notes,
-        ReportsToId: el['Reports To'],
+        ReportsToId: employeeAcceptsReport[0].Id,
         'Reports To': `${employeeAcceptsReport[0].FirstName} ${employeeAcceptsReport[0].LastName}`,
       });
       return acc;
