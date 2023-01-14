@@ -73,7 +73,7 @@ WHERE EmployeeID = ${id};`;
         'Home Phone': employees.homePhone,
         Extension: employees.extension,
         Notes: employees.notes,
-        ReportsTo: employees.reportsTo,
+        ReportsToId: employees.reportsTo,
       })
       .where(eq(employees.employeeId, id))
       .all();
