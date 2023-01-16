@@ -9,7 +9,7 @@ const ctrl = new CtrlProducts();
 router.get('/', connectingToDb, controllerWrapper(ctrl.getAllProducts));
 router.get('/rowCount', connectingToDb, controllerWrapper(ctrl.getRowCount));
 router.get(
-  '/searchProducts',
+  '/search',
   connectingToDb,
   controllerWrapper(ctrl.getSearchProducts),
 );
