@@ -61,7 +61,7 @@ WHERE CustomerID = '${id}';`;
         'Company Name': customers.companyName,
         'Contact Name': customers.contactName,
         'Contact Title': customers.contactTitle,
-        Adress: customers.address,
+        Address: customers.address,
         City: customers.city,
         'Postal Code': customers.postalCode,
         Region: customers.region,
