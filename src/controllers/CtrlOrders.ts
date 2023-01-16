@@ -55,7 +55,16 @@ export class CtrlOrders {
     const { id } = req.params;
 
     const timeOrder = metrics.startTime();
-    const orderInformation = await orders.orderInformationById(+id);
+    let orderInformation: { sqlString: string; data: {}[] };
+    const data = await orders.orderInformationById(+id);
+    if (data.data[0].Id === null) {
+      orderInformation = {
+        sqlString: data.sqlString,
+        data: [],
+      };
+    } else {
+      orderInformation = data;
+    }
     const durationOrder = metrics.stopTime(timeOrder);
 
     const timeProducts = metrics.startTime();
