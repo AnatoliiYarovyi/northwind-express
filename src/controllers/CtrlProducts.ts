@@ -69,4 +69,26 @@ export class CtrlProducts {
       },
     });
   }
+
+  async getSearchProducts(req: Request, res, next) {
+    const metrics = new Metrics();
+    const db: BetterSQLite3Database = req.body.connection;
+    const products = new Products(db);
+    const { value } = req.query;
+
+    const time = metrics.startTime();
+    const data = await products.getSearchProducts(`${value}`);
+    const duration = metrics.stopTime(time);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        duration,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
+        sqlString: data.sqlString,
+        data: data.data,
+      },
+    });
+  }
 }

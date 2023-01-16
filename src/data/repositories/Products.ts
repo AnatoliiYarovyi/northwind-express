@@ -1,6 +1,7 @@
+import { AnyMxRecord } from 'dns';
 import { sql } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
-import { eq } from 'drizzle-orm/expressions';
+import { eq, like } from 'drizzle-orm/expressions';
 
 import { products } from '../tables/productsTable';
 import { suppliers } from '../tables/suppliersTable';
@@ -76,4 +77,26 @@ WHERE Id = ?;`;
 
     return { sqlString, data };
   }
+
+  getSearchProducts = async (value: string) => {
+    const sqlString = `SELECT ProductID AS Id, ProductName AS Name, QuantityPerUnit AS 'Quantity Per Unit', UnitPrice AS Price, UnitsInStock AS Stock
+FROM Products
+WHERE Products.ProductName LIKE '%${value}%';`;
+    const data = await this.db
+      .select(products)
+      .fields({
+        Id: products.productId,
+        Name: products.productName,
+        'Qt per unit': products.quantityPerUnit,
+        Price: products.unitPrice,
+        Stock: products.unitsInStock,
+      })
+      .where(like(products.productName, `%${value}%`))
+      .all();
+
+    return {
+      sqlString,
+      data,
+    };
+  };
 }

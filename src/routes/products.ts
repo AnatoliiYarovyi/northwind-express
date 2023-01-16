@@ -8,6 +8,11 @@ const ctrl = new CtrlProducts();
 
 router.get('/', connectingToDb, controllerWrapper(ctrl.getAllProducts));
 router.get('/rowCount', connectingToDb, controllerWrapper(ctrl.getRowCount));
+router.get(
+  '/searchProducts',
+  connectingToDb,
+  controllerWrapper(ctrl.getSearchProducts),
+);
 router.get('/:id', connectingToDb, controllerWrapper(ctrl.getProductsById));
 
 export default router;
