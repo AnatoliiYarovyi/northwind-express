@@ -67,32 +67,37 @@ export class CtrlEmployees {
 
     const time = metrics.startTime();
     const { sqlString, data } = await employees.getEmployeeById(id);
-    const { ReportsToId } = data[0];
-    const { employeeAcceptsReport } = await employees.getEmployeeAcceptsReport(
-      ReportsToId,
-    );
-    const duration = metrics.stopTime(time);
 
-    const changedName = data.reduce((acc, el) => {
-      acc.push({
-        Id: el.Id,
-        Name: `${el.FirstName} ${el.LastName}`,
-        Title: el.Title,
-        'Title Of Courtesy': el['Title Of Courtesy'],
-        'Birth Date': el['Birth Date'],
-        'Hire Date': el['Hire Date'],
-        Address: el.Address,
-        City: el.City,
-        'Postal Code': el['Postal Code'],
-        Country: el.Country,
-        'Home Phone': el['Home Phone'],
-        Extension: el.Extension,
-        Notes: el.Notes,
-        ReportsToId: employeeAcceptsReport[0].Id,
-        'Reports To': `${employeeAcceptsReport[0].FirstName} ${employeeAcceptsReport[0].LastName}`,
-      });
-      return acc;
-    }, []);
+    let changedName: {}[];
+    if (data[0] === undefined) {
+      changedName = [];
+    } else {
+      const { ReportsToId } = data[0];
+      const { employeeAcceptsReport } =
+        await employees.getEmployeeAcceptsReport(ReportsToId);
+
+      changedName = data.reduce((acc, el) => {
+        acc.push({
+          Id: el.Id,
+          Name: `${el.FirstName} ${el.LastName}`,
+          Title: el.Title,
+          'Title Of Courtesy': el['Title Of Courtesy'],
+          'Birth Date': el['Birth Date'],
+          'Hire Date': el['Hire Date'],
+          Address: el.Address,
+          City: el.City,
+          'Postal Code': el['Postal Code'],
+          Country: el.Country,
+          'Home Phone': el['Home Phone'],
+          Extension: el.Extension,
+          Notes: el.Notes,
+          ReportsToId: employeeAcceptsReport[0].Id,
+          'Reports To': `${employeeAcceptsReport[0].FirstName} ${employeeAcceptsReport[0].LastName}`,
+        });
+        return acc;
+      }, []);
+    }
+    const duration = metrics.stopTime(time);
 
     res.status(200).json({
       status: 'success',
