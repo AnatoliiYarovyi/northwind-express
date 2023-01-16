@@ -73,7 +73,7 @@ WHERE Id = ${id};`;
     const data = await this.db
       .select(orders)
       .fields({
-        Id: sql`count(${orders.orderId})`,
+        Id: orders.orderId,
         'Customer Id': orders.customerId,
         'Ship Name': orders.shipName,
         'Total Products': sql`count(${orderDetails.orderId})`.as<number>(),
