@@ -2,45 +2,82 @@ import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { Request } from 'express';
 
 import { Orders } from '../data/repositories/Orders';
+import { Metrics } from './Metrics';
 
 export class CtrlOrders {
   async getRowCount(req: Request, res, next) {
+    const metrics = new Metrics();
     const db: BetterSQLite3Database = req.body.connection;
     const employees = new Orders(db);
 
+    const time = metrics.startTime();
     const data = await employees.getRowCount();
+    const duration = metrics.stopTime(time);
 
     res.status(200).json({
       status: 'success',
-      data,
+      data: {
+        duration,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
+        sqlString: data.sqlString,
+        data: data.data,
+      },
     });
   }
 
   async getAllOrders(req: Request, res, next) {
+    const metrics = new Metrics();
     const db: BetterSQLite3Database = req.body.connection;
     const orders = new Orders(db);
     const { limit, page } = req.query;
 
+    const time = metrics.startTime();
     const data = await orders.getAllOrders(+limit, +page);
+    const duration = metrics.stopTime(time);
 
     res.status(200).json({
       status: 'success',
-      data,
+      data: {
+        duration,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
+        sqlString: data.sqlString,
+        data: data.data,
+      },
     });
   }
 
   async getOrderById(req: Request, res, next) {
+    const metrics = new Metrics();
     const db: BetterSQLite3Database = req.body.connection;
     const orders = new Orders(db);
     const { id } = req.params;
 
+    const timeOrder = metrics.startTime();
     const orderInformation = await orders.orderInformationById(+id);
+    const durationOrder = metrics.stopTime(timeOrder);
+
+    const timeProducts = metrics.startTime();
     const productsInOrder = await orders.productsInOrderById(+id);
+    const durationProducts = metrics.stopTime(timeProducts);
 
     res.status(200).json({
       status: 'success',
-      orderInformation,
-      productsInOrder,
+      orderInformation: {
+        durationOrder,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
+        sqlString: orderInformation.sqlString,
+        data: orderInformation.data,
+      },
+      productsInOrder: {
+        durationProducts,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
+        sqlString: productsInOrder.sqlString,
+        data: productsInOrder.data,
+      },
     });
   }
 }

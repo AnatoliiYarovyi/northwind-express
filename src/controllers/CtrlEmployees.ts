@@ -2,27 +2,39 @@ import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { Request } from 'express';
 
 import { Employees } from '../data/repositories/Employees';
+import { Metrics } from './Metrics';
 
 export class CtrlEmployees {
   async getRowCount(req: Request, res, next) {
+    const metrics = new Metrics();
     const db: BetterSQLite3Database = req.body.connection;
     const employees = new Employees(db);
 
+    const time = metrics.startTime();
     const data = await employees.getRowCount();
+    const duration = metrics.stopTime(time);
 
     res.status(200).json({
       status: 'success',
-      data,
+      data: {
+        duration,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
+        sqlString: data.sqlString,
+        data: data.data,
+      },
     });
   }
 
   async getAllEmployees(req: Request, res, next) {
+    const metrics = new Metrics();
     const db: BetterSQLite3Database = req.body.connection;
     const employees = new Employees(db);
     const { limit, page } = req.query;
 
+    const time = metrics.startTime();
     const { sqlString, data } = await employees.getAllEmployees(+limit, +page);
-
+    const duration = metrics.stopTime(time);
     const changedName = data.reduce((acc, el) => {
       acc.push({
         Id: el.Id,
@@ -38,6 +50,9 @@ export class CtrlEmployees {
     res.status(200).json({
       status: 'success',
       data: {
+        duration,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
         sqlString,
         data: changedName,
       },
@@ -45,16 +60,18 @@ export class CtrlEmployees {
   }
 
   async getEmployeeById(req: Request, res, next) {
+    const metrics = new Metrics();
     const db: BetterSQLite3Database = req.body.connection;
     const employees = new Employees(db);
     const { id } = req.params;
 
+    const time = metrics.startTime();
     const { sqlString, data } = await employees.getEmployeeById(id);
-
     const { ReportsToId } = data[0];
     const { employeeAcceptsReport } = await employees.getEmployeeAcceptsReport(
       ReportsToId,
     );
+    const duration = metrics.stopTime(time);
 
     const changedName = data.reduce((acc, el) => {
       acc.push({
@@ -80,6 +97,9 @@ export class CtrlEmployees {
     res.status(200).json({
       status: 'success',
       data: {
+        duration,
+        ts: metrics.timeStamp(),
+        servedBy: 'northwind.db',
         sqlString,
         data: changedName,
       },
