@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
-import { eq } from 'drizzle-orm/expressions';
+import { eq, like } from 'drizzle-orm/expressions';
 
 import { customers } from '../tables/customersTable';
 
@@ -74,4 +74,26 @@ WHERE CustomerID = '${id}';`;
 
     return { sqlString, data };
   }
+
+  getSearchCustomers = async (value: string) => {
+    const sqlString = `SELECT CustomerID AS Id, CompanyName AS Name, ContactName AS Contact, ContactTitle AS Title, Phone 
+FROM Customers
+WHERE Customers.CompanyName LIKE '%${value}%'`;
+    const data = await this.db
+      .select(customers)
+      .fields({
+        Id: customers.customerId,
+        Name: customers.companyName,
+        Contact: customers.contactName,
+        Title: customers.contactTitle,
+        Phone: customers.phone,
+      })
+      .where(like(customers.companyName, `%${value}%`))
+      .all();
+
+    return {
+      sqlString,
+      data,
+    };
+  };
 }
