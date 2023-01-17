@@ -74,14 +74,14 @@ export class CtrlOrders {
     res.status(200).json({
       status: 'success',
       orderInformation: {
-        durationOrder,
+        duration: durationOrder,
         ts: metrics.timeStamp(),
         servedBy: 'northwind.db',
         sqlString: orderInformation.sqlString,
         data: orderInformation.data,
       },
       productsInOrder: {
-        durationProducts,
+        duration: durationProducts,
         ts: metrics.timeStamp(),
         servedBy: 'northwind.db',
         sqlString: productsInOrder.sqlString,
