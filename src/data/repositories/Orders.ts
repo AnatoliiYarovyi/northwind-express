@@ -29,21 +29,23 @@ FROM Orders;`;
 
   async getAllOrders(limit: number, page: number) {
     const offset: number = (page - 1) * limit;
-    const sqlString = `SELECT o.OrderID AS Id, (od.Quantity * p.UnitPrice) AS 'Total Price', od.ProductID AS Products, od.Quantity AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
+    const sqlString = `SELECT o.OrderID AS Id, SUM(od.Quantity * p.UnitPrice* (1 - od.Discount)) AS 'Total Price', SUM(od.ProductID) AS Products,
+SUM(od.Quantity) AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
 JOIN Products AS p ON od.ProductID = p.ProductID
 LIMIT ${limit}
-OFFSET ${offset};`;
+OFFSET ${offset}
+GROUP BY o.OrderID;`;
 
     const data = await this.db
       .select(orders)
       .fields({
         Id: orders.orderId,
         'Total Price':
-          sql`(${orderDetails.quantity} * ${products.unitPrice} * (1 - ${orderDetails.discount}))`.as<number>(),
-        Products: orderDetails.productId,
-        Quantity: orderDetails.quantity,
+          sql`sum(${orderDetails.quantity} * ${products.unitPrice} * (1 - ${orderDetails.discount}))`.as<number>(),
+        Products: sql`sum(${orderDetails.productId})`.as<number>(),
+        Quantity: sql`sum(${orderDetails.quantity})`.as<number>(),
         Shipped: orders.shippedDate,
         'Ship Name': orders.shipName,
         City: orders.shipCity,
@@ -53,6 +55,7 @@ OFFSET ${offset};`;
       .leftJoin(products, eq(orderDetails.productId, products.productId))
       .limit(limit)
       .offset(offset)
+      .groupBy(orders.orderId)
       .all();
 
     return { sqlString, data };
