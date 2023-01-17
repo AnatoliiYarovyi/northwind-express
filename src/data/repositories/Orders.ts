@@ -29,7 +29,7 @@ FROM Orders;`;
 
   async getAllOrders(limit: number, page: number) {
     const offset: number = (page - 1) * limit;
-    const sqlString = `SELECT o.OrderID AS Id, SUM(od.Quantity * p.UnitPrice* (1 - od.Discount)) AS 'Total Price', SUM(od.ProductID) AS Products,
+    const sqlString = `SELECT o.OrderID AS Id, SUM(od.Quantity * p.UnitPrice* (1 - od.Discount)) AS 'Total Price', COUNT(od.OrderID) AS Products,
 SUM(od.Quantity) AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
@@ -44,7 +44,7 @@ OFFSET ${offset};`;
         Id: orders.orderId,
         'Total Price':
           sql`sum(${orderDetails.quantity} * ${products.unitPrice} * (1 - ${orderDetails.discount}))`.as<number>(),
-        Products: sql`sum(${orderDetails.productId})`.as<number>(),
+        Products: sql`count(${orderDetails.orderId})`.as<number>(),
         Quantity: sql`sum(${orderDetails.quantity})`.as<number>(),
         Shipped: orders.shippedDate,
         'Ship Name': orders.shipName,
@@ -62,7 +62,7 @@ OFFSET ${offset};`;
   }
 
   async orderInformationById(id: number) {
-    const sqlString = `SELECT o.OrderID AS Id, CustomerID AS 'Customer Id', ShipName AS 'Ship Name', SUM(od.OrderID) AS 'Total Products', 
+    const sqlString = `SELECT o.OrderID AS Id, CustomerID AS 'Customer Id', ShipName AS 'Ship Name', COUNT(od.OrderID) AS 'Total Products', 
 SUM(od.Quantity) AS 'Total Quantity', SUM(od.Quantity * p.UnitPrice * (1 - od.Discount)) AS 'Total Price', 
 SUM(od.Quantity * p.UnitPrice * od.Discount) AS 'Total Discount', s.CompanyName AS 'Ship Via', Freight, 
 OrderDate AS 'Order Date', RequiredDate AS 'Required Date', ShippedDate AS 'Shipped Date', ShipCity AS 'Ship City', 
@@ -79,7 +79,7 @@ WHERE Id = ${id};`;
         Id: orders.orderId,
         'Customer Id': orders.customerId,
         'Ship Name': orders.shipName,
-        'Total Products': sql`sum(${orderDetails.productId})`.as<number>(),
+        'Total Products': sql`count(${orderDetails.orderId})`.as<number>(),
         'Total Quantity': sql`sum(${orderDetails.quantity})`.as<number>(),
         'Total Price':
           sql`sum(${orderDetails.quantity} * ${products.unitPrice} * (1 - ${orderDetails.discount}))`.as<number>(),
