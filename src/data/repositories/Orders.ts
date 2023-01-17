@@ -34,9 +34,9 @@ SUM(od.Quantity) AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', 
 FROM Orders AS o
 JOIN OrderDetails AS od ON o.OrderID = od.OrderID
 JOIN Products AS p ON od.ProductID = p.ProductID
+GROUP BY o.OrderID
 LIMIT ${limit}
-OFFSET ${offset}
-GROUP BY o.OrderID;`;
+OFFSET ${offset};`;
 
     const data = await this.db
       .select(orders)
