@@ -1,17 +1,13 @@
-export class Metrics {
-  timeStamp() {
-    const date = new Date();
-    return date.toISOString();
-  }
-
-  startTime() {
-    const time = process.hrtime();
-    return time;
-  }
-
-  stopTime(startTime) {
-    const time = process.hrtime(startTime);
-    const timeInterval = time[0] * 1000 + time[1] / 1000000;
-    return timeInterval;
-  }
+function getTimeISO(): string {
+  return new Date().toISOString();
 }
+
+function getTriggerDate(): number {
+  return new Date().getTime();
+}
+
+function getTimeInterval(triggerDate: number): number {
+  return getTriggerDate() - triggerDate;
+}
+
+export const metrics = { getTimeISO, getTriggerDate, getTimeInterval };
