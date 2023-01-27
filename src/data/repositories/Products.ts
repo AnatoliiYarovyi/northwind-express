@@ -1,17 +1,13 @@
-import { AnyMxRecord } from 'dns';
 import { sql } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { eq, like } from 'drizzle-orm/expressions';
 
+import { connecting } from '../../db/connecting';
 import { products } from '../tables/productsTable';
 import { suppliers } from '../tables/suppliersTable';
 
 export class Products {
-  private db: BetterSQLite3Database;
-
-  constructor(db: BetterSQLite3Database) {
-    this.db = db;
-  }
+  private db: BetterSQLite3Database = connecting();
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)

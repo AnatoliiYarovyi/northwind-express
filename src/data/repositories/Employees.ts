@@ -2,14 +2,11 @@ import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { eq } from 'drizzle-orm/expressions';
 import { sql } from 'drizzle-orm';
 
+import { connecting } from '../../db/connecting';
 import { employees } from '../tables/employeesTable';
 
 export class Employees {
-  private db: BetterSQLite3Database;
-
-  constructor(db: BetterSQLite3Database) {
-    this.db = db;
-  }
+  private db: BetterSQLite3Database = connecting();
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)

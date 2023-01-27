@@ -1,18 +1,15 @@
 import { sql } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
-import { and, asc, desc, eq, or } from 'drizzle-orm/expressions';
-import { orderDetails } from '../tables/orderDetailsTable';
+import { eq } from 'drizzle-orm/expressions';
 
+import { connecting } from '../../db/connecting';
+import { orderDetails } from '../tables/orderDetailsTable';
 import { orders } from '../tables/ordersTable';
 import { products } from '../tables/productsTable';
 import { shippers } from '../tables/shippersTable';
 
 export class Orders {
-  private db: BetterSQLite3Database;
-
-  constructor(db: BetterSQLite3Database) {
-    this.db = db;
-  }
+  private db: BetterSQLite3Database = connecting();
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)
