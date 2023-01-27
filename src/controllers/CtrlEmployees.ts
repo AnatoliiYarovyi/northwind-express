@@ -1,41 +1,40 @@
-import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { Employees } from '../data/repositories/Employees';
-import { Metrics } from './Metrics';
+import { metrics } from './metrics';
+import { TypedDataResponse, RowCount } from '../interfeces/Ctrl';
+import { AllEmployees, EmployeeById } from '../interfeces/CtrlEmployees';
+
+const employees = new Employees();
 
 export class CtrlEmployees {
-  async getRowCount(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const employees = new Employees(db);
-
-    const time = metrics.startTime();
+  async getRowCount(req: Request, res: Response) {
+    const triggerDate = metrics.getTriggerDate();
     const data = await employees.getRowCount();
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<RowCount> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getAllEmployees(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const employees = new Employees(db);
+  async getAllEmployees(req: Request, res: Response) {
     const { limit, page } = req.query;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const { sqlString, data } = await employees.getAllEmployees(+limit, +page);
-    const duration = metrics.stopTime(time);
-    const changedName = data.reduce((acc, el) => {
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const changedName: AllEmployees = data.reduce((acc: AllEmployees, el) => {
       acc.push({
         Id: el.Id,
         Name: `${el.FirstName} ${el.LastName}`,
@@ -47,28 +46,27 @@ export class CtrlEmployees {
       return acc;
     }, []);
 
+    const typedDataResponse: TypedDataResponse<AllEmployees> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString,
+      data: changedName,
+    };
+
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString,
-        data: changedName,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getEmployeeById(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const employees = new Employees(db);
+  async getEmployeeById(req: Request, res: Response) {
     const { id } = req.params;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const { sqlString, data } = await employees.getEmployeeById(id);
 
-    let changedName: {}[];
+    let changedName: [] | EmployeeById;
     if (data[0] === undefined) {
       changedName = [];
     } else {
@@ -76,7 +74,7 @@ export class CtrlEmployees {
       const { employeeAcceptsReport } =
         await employees.getEmployeeAcceptsReport(ReportsToId);
 
-      changedName = data.reduce((acc, el) => {
+      changedName = data.reduce((acc: EmployeeById, el) => {
         acc.push({
           Id: el.Id,
           Name: `${el.FirstName} ${el.LastName}`,
@@ -97,17 +95,19 @@ export class CtrlEmployees {
         return acc;
       }, []);
     }
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<[] | EmployeeById> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString,
+      data: changedName,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString,
-        data: changedName,
-      },
+      data: typedDataResponse,
     });
   }
 }

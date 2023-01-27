@@ -1,72 +1,71 @@
-import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { Suppliers } from '../data/repositories/Suppliers';
-import { Metrics } from './Metrics';
+import { metrics } from './metrics';
+import { RowCount, TypedDataResponse } from '../interfeces/Ctrl';
+import { AllSuppliers, SupplierById } from '../interfeces/CtrlSuppliers';
+
+const suppliers = new Suppliers();
 
 export class CtrlSuppliers {
-  async getRowCount(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const employees = new Suppliers(db);
+  async getRowCount(req: Request, res: Response) {
+    const triggerDate = metrics.getTriggerDate();
+    const data = await suppliers.getRowCount();
+    const duration = metrics.getTimeInterval(triggerDate);
 
-    const time = metrics.startTime();
-    const data = await employees.getRowCount();
-    const duration = metrics.stopTime(time);
+    const typedDataResponse: TypedDataResponse<RowCount> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getAllSuppliers(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const suppliers = new Suppliers(db);
+  async getAllSuppliers(req: Request, res: Response) {
     const { limit, page } = req.query;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const data = await suppliers.getAllSuppliers(+limit, +page);
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<AllSuppliers> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getSupplierById(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const suppliers = new Suppliers(db);
+  async getSupplierById(req: Request, res: Response) {
     const { id } = req.params;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const data = await suppliers.getSupplierById(+id);
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<SupplierById> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 }

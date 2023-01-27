@@ -1,90 +1,86 @@
-import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { Customers } from '../data/repositories/Customers';
-import { Metrics } from './Metrics';
+import { metrics } from './metrics';
+import { TypedDataResponse, RowCount } from '../interfeces/Ctrl';
+import { AllCustomers, CustomersById } from '../interfeces/CtrlCustomers';
+
+const customers = new Customers();
 
 export class CtrlCustomers {
-  async getRowCount(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const customers = new Customers(db);
-
-    const time = metrics.startTime();
+  async getRowCount(req: Request, res: Response) {
+    const triggerDate = metrics.getTriggerDate();
     const data = await customers.getRowCount();
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<RowCount> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getAllCustomers(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const customers = new Customers(db);
+  async getAllCustomers(req: Request, res: Response) {
     const { limit, page } = req.query;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const data = await customers.getAllCustomers(+limit, +page);
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<AllCustomers> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getCustomerById(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const customers = new Customers(db);
+  async getCustomerById(req: Request, res: Response) {
     const { id } = req.params;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const data = await customers.getCustomersById(id);
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
+
+    const typedDataResponse: TypedDataResponse<CustomersById> = {
+      duration,
+      ts: metrics.getTimeISO(),
+      servedBy: 'northwind.db',
+      sqlString: data.sqlString,
+      data: data.data,
+    };
 
     res.status(200).json({
       status: 'success',
-      data: {
-        duration,
-        ts: metrics.timeStamp(),
-        servedBy: 'northwind.db',
-        sqlString: data.sqlString,
-        data: data.data,
-      },
+      data: typedDataResponse,
     });
   }
 
-  async getSearchCustomers(req: Request, res, next) {
-    const metrics = new Metrics();
-    const db: BetterSQLite3Database = req.body.connection;
-    const customers = new Customers(db);
+  async getSearchCustomers(req: Request, res: Response) {
     const { value } = req.query;
 
-    const time = metrics.startTime();
+    const triggerDate = metrics.getTriggerDate();
     const data = await customers.getSearchCustomers(`${value}`);
-    const duration = metrics.stopTime(time);
+    const duration = metrics.getTimeInterval(triggerDate);
 
     res.status(200).json({
       status: 'success',
       data: {
         duration,
-        ts: metrics.timeStamp(),
+        ts: metrics.getTimeISO(),
         servedBy: 'northwind.db',
         sqlString: data.sqlString,
         data: data.data,
