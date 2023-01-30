@@ -12,26 +12,20 @@ export class Customers {
   }
 
   async getRowCount() {
-    const sqlString = `SELECT COUNT(*)
-FROM Customers;`;
-    const data = this.db
-      .select(customers)
-      .fields({
-        RowCount: sql`count(${customers.customerId})`.as<number>(),
-      })
-      .all();
+    const queryTemp = this.db.select(customers).fields({
+      RowCount: sql`count(${customers.customerId})`.as<number>(),
+    });
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw.replace(/"/gm, "'");
 
     return { sqlString, data };
   }
 
   async getAllCustomers(limit: number, page: number) {
-    const offset = this.getOffset(page, limit);
-    const sqlString = `SELECT CustomerId AS Id, CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, City, Country 
-FROM Customers
-LIMIT ${limit}
-OFFSET ${offset};`;
-
-    const data = this.db
+    const offset = this.getOffset(limit, page);
+    const queryTemp = this.db
       .select(customers)
       .fields({
         Id: customers.customerId,
@@ -42,19 +36,20 @@ OFFSET ${offset};`;
         Country: customers.country,
       })
       .limit(limit)
-      .offset(offset)
-      .all();
+      .offset(offset);
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace('limit ?', `limit ${limit}`)
+      .replace('offset ?', `offset ${offset}`);
 
     return { sqlString, data };
   }
 
   async getCustomersById(id: string) {
-    const sqlString = `SELECT CustomerID AS Id, CompanyName AS 'Company Name', ContactName AS 'Contact Name', ContactTitle AS 'Contact Title',
-Address, City, PostalCode AS 'Postal Code', Region, Country, Phone, Fax  
-FROM Customers
-WHERE CustomerID = '${id}';`;
-
-    const data = this.db
+    const queryTemp = this.db
       .select(customers)
       .fields({
         Id: customers.customerId,
@@ -69,17 +64,19 @@ WHERE CustomerID = '${id}';`;
         Phone: customers.phone,
         Fax: customers.fax,
       })
-      .where(eq(customers.customerId, id))
-      .all();
+      .where(eq(customers.customerId, id));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'CustomerID' = ?`, `'CustomerID' = ${id}`);
 
     return { sqlString, data };
   }
 
   getSearchCustomers = async (value: string) => {
-    const sqlString = `SELECT CustomerID AS Id, CompanyName AS Name, ContactName AS Contact, ContactTitle AS Title, Phone 
-FROM Customers
-WHERE Customers.CompanyName LIKE '%${value}%'`;
-    const data = this.db
+    const queryTemp = this.db
       .select(customers)
       .fields({
         Id: customers.customerId,
@@ -88,8 +85,13 @@ WHERE Customers.CompanyName LIKE '%${value}%'`;
         Title: customers.contactTitle,
         Phone: customers.phone,
       })
-      .where(like(customers.companyName, `%${value}%`))
-      .all();
+      .where(like(customers.companyName, `%${value}%`));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`like ?`, `like %${value}%`);
 
     return {
       sqlString,

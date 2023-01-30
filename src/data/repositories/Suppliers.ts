@@ -12,25 +12,19 @@ export class Suppliers {
   }
 
   async getRowCount() {
-    const sqlString = `SELECT COUNT(*) FROM Suppliers;`;
-    const data = this.db
-      .select(suppliers)
-      .fields({
-        RowCount: sql`count(${suppliers.supplierId})`.as<number>(),
-      })
-      .all();
+    const queryTemp = this.db.select(suppliers).fields({
+      RowCount: sql`count(${suppliers.supplierId})`.as<number>(),
+    });
 
-    const rawResp = this.db
-      .select(suppliers)
-      .fields({ RowCount: sql`count(${suppliers.supplierId})`.as<number>() })
-      .toSQL();
-    console.log(rawResp);
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw.replace(/"/gm, "'");
 
     return { sqlString, data };
   }
 
   async getAllSuppliers(limit: number, page: number) {
-    const offset = this.getOffset(page, limit);
+    const offset = this.getOffset(limit, page);
     const queryTemp = this.db
       .select(suppliers)
       .fields({
@@ -44,19 +38,18 @@ export class Suppliers {
       .limit(limit)
       .offset(offset);
 
-    const { sql: sqlRaw } = queryTemp.toSQL();
-    const sqlString = sqlRaw.replace(/"/gm, "'");
     const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace('limit ?', `limit ${limit}`)
+      .replace('offset ?', `offset ${offset}`);
 
     return { sqlString, data };
   }
 
   async getSupplierById(id: number) {
-    const sqlString = `SELECT SupplierID AS Id, CompanyName AS Company, ContactName AS Contact, ContactTitle AS Title, Address, City, Region, PostalCode AS 'Postal Code', Country, Phone 
-FROM Suppliers
-WHERE SupplierID = ${id};`;
-
-    const data = this.db
+    const queryTemp = this.db
       .select(suppliers)
       .fields({
         Id: suppliers.supplierId,
@@ -70,8 +63,13 @@ WHERE SupplierID = ${id};`;
         Country: suppliers.country,
         Phone: suppliers.phone,
       })
-      .where(eq(suppliers.supplierId, id))
-      .all();
+      .where(eq(suppliers.supplierId, id));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'SupplierID' = ?`, `'SupplierID' = ${id}`);
 
     return { sqlString, data };
   }

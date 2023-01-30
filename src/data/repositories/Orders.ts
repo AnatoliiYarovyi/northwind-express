@@ -3,7 +3,6 @@ import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { eq } from 'drizzle-orm/expressions';
 
 import { connecting } from '../../db/connecting';
-import { getEmployeeOrder, getEpmloyeById } from '../../db/queries/queries';
 import { orderDetails } from '../tables/orderDetailsTable';
 import { orders } from '../tables/ordersTable';
 import { products } from '../tables/productsTable';
@@ -16,30 +15,19 @@ export class Orders {
   }
 
   async getRowCount() {
-    const sqlString = `SELECT COUNT(*)
-FROM Orders;`;
-    const data = this.db
-      .select(orders)
-      .fields({
-        RowCount: sql`count(${orders.orderId})`.as<number>(),
-      })
-      .all();
+    const queryTemp = this.db.select(orders).fields({
+      RowCount: sql`count(${orders.orderId})`.as<number>(),
+    });
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw.replace(/"/gm, "'");
 
     return { sqlString, data };
   }
 
   async getAllOrders(limit: number, page: number) {
-    const offset = this.getOffset(page, limit);
-    const sqlString = `SELECT o.OrderID AS Id, SUM(od.Quantity * p.UnitPrice* (1 - od.Discount)) AS 'Total Price', COUNT(od.OrderID) AS Products,
-SUM(od.Quantity) AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
-FROM Orders AS o
-JOIN OrderDetails AS od ON o.OrderID = od.OrderID
-JOIN Products AS p ON od.ProductID = p.ProductID
-GROUP BY o.OrderID
-LIMIT ${limit}
-OFFSET ${offset};`;
-
-    const data = this.db
+    const offset = this.getOffset(limit, page);
+    const queryTemp = this.db
       .select(orders)
       .fields({
         Id: orders.orderId,
@@ -56,16 +44,20 @@ OFFSET ${offset};`;
       .leftJoin(products, eq(orderDetails.productId, products.productId))
       .limit(limit)
       .offset(offset)
-      .groupBy(orders.orderId)
-      .all();
+      .groupBy(orders.orderId);
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace('limit ?', `limit ${limit}`)
+      .replace('offset ?', `offset ${offset}`);
 
     return { sqlString, data };
   }
 
   async orderInformationById(id: number) {
-    const sqlString = getEmployeeOrder(id);
-
-    const data = this.db
+    const queryTemp = this.db
       .select(orders)
       .fields({
         Id: orders.orderId,
@@ -90,16 +82,19 @@ OFFSET ${offset};`;
       .leftJoin(shippers, eq(orders.shipVia, shippers.shipperId))
       .leftJoin(orderDetails, eq(orders.orderId, orderDetails.orderId))
       .leftJoin(products, eq(orderDetails.productId, products.productId))
-      .where(eq(orders.orderId, id))
-      .all();
+      .where(eq(orders.orderId, id));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'OrderID' = ?`, `'OrderID' = ${id}`);
 
     return { sqlString, data };
   }
 
   async productsInOrderById(id: number) {
-    const sqlString = getEpmloyeById(id);
-
-    const data = this.db
+    const queryTemp = this.db
       .select(orders)
       .fields({
         Id: orders.orderId,
@@ -113,8 +108,13 @@ OFFSET ${offset};`;
       })
       .leftJoin(orderDetails, eq(orders.orderId, orderDetails.orderId))
       .leftJoin(products, eq(orderDetails.productId, products.productId))
-      .where(eq(orders.orderId, id))
-      .all();
+      .where(eq(orders.orderId, id));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'OrderID' = ?`, `'OrderID' = ${id}`);
 
     return { sqlString, data };
   }

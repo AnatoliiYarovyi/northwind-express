@@ -12,26 +12,19 @@ export class Employees {
   }
 
   async getRowCount() {
-    const sqlString = `SELECT COUNT(*)
-FROM Employees;`;
-    const data = this.db
-      .select(employees)
-      .fields({
-        RowCount: sql`count(${employees.employeeId})`.as<number>(),
-      })
-      .all();
+    const queryTemp = this.db.select(employees).fields({
+      RowCount: sql`count(${employees.employeeId})`.as<number>(),
+    });
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw.replace(/"/gm, "'");
 
     return { sqlString, data };
   }
 
   async getAllEmployees(limit: number, page: number) {
-    const offset = this.getOffset(page, limit);
-    const sqlString = `SELECT EmployeeID AS Id, FirstName AS Name, LastName, Title, City, HomePhone AS Phone, Country  
-FROM Employees
-LIMIT ${limit}
-OFFSET ${offset};`;
-
-    const data = this.db
+    const offset = this.getOffset(limit, page);
+    const queryTemp = this.db
       .select(employees)
       .fields({
         Id: employees.employeeId,
@@ -43,20 +36,20 @@ OFFSET ${offset};`;
         Country: employees.country,
       })
       .limit(limit)
-      .offset(offset)
-      .all();
+      .offset(offset);
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace('limit ?', `limit ${limit}`)
+      .replace('offset ?', `offset ${offset}`);
 
     return { sqlString, data };
   }
 
   async getEmployeeById(id: string) {
-    const sqlString = `SELECT EmployeeID AS Id, FirstName, LastName, Title, TitleOfCourtesy AS 'Title Of Courtesy', BirthDate AS 'Birth Date', 
-HireDate AS 'Hire Date', Address, City, PostalCode AS 'Postal Code', Country, HomePhone AS 'Home Phone', Extension, Notes, 
-(SELECT FirstName FROM Employees WHERE ReportsTo = EmployeeID) AS 'Reports To'
-FROM Employees 
-WHERE EmployeeID = ${id};`;
-
-    const data = this.db
+    const queryTemp = this.db
       .select(employees)
       .fields({
         Id: employees.employeeId,
@@ -75,25 +68,32 @@ WHERE EmployeeID = ${id};`;
         Notes: employees.notes,
         ReportsToId: employees.reportsTo,
       })
-      .where(eq(employees.employeeId, id))
-      .all();
+      .where(eq(employees.employeeId, id));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'EmployeeID' = ?`, `'EmployeeID' = ${id}`);
 
     return { sqlString, data };
   }
 
   async getEmployeeAcceptsReport(id: number) {
-    const sqlString = `SELECT EmployeeID AS Id, FirstName, LastName 
-FROM Employees
-WHERE EmployeeID = ${id};`;
-    const employeeAcceptsReport = this.db
+    const queryTemp = this.db
       .select(employees)
       .fields({
         Id: employees.employeeId,
         FirstName: employees.firstName,
         LastName: employees.lastName,
       })
-      .where(eq(employees.employeeId, `${id}`))
-      .all();
+      .where(eq(employees.employeeId, `${id}`));
+
+    const employeeAcceptsReport = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'EmployeeID' = ?`, `'EmployeeID' = ${id}`);
 
     return { sqlString, employeeAcceptsReport };
   }

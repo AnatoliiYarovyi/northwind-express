@@ -13,26 +13,20 @@ export class Products {
   }
 
   async getRowCount() {
-    const sqlString = `SELECT COUNT(*)
-FROM Products;`;
-    const data = this.db
-      .select(products)
-      .fields({
-        RowCount: sql`count(${products.productId})`.as<number>(),
-      })
-      .all();
+    const queryTemp = this.db.select(products).fields({
+      RowCount: sql`count(${products.productId})`.as<number>(),
+    });
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw.replace(/"/gm, "'");
 
     return { sqlString, data };
   }
 
   async getAllProducts(limit: number, page: number) {
-    const offset = this.getOffset(page, limit);
-    const sqlString = `SELECT ProductID AS Id, ProductName AS Name, QuantityPerUnit AS 'Qt per unit', UnitPrice AS Price, UnitsInStock AS Stock, UnitsOnOrder AS Orders 
-FROM Products
-LIMIT ${limit}
-OFFSET ${offset};`;
-
-    const data = this.db
+    const offset = this.getOffset(limit, page);
+    const queryTemp = this.db
       .select(products)
       .fields({
         Id: products.productId,
@@ -43,20 +37,20 @@ OFFSET ${offset};`;
         Orders: products.unitsOnOrder,
       })
       .limit(limit)
-      .offset(offset)
-      .all();
+      .offset(offset);
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace('limit ?', `limit ${limit}`)
+      .replace('offset ?', `offset ${offset}`);
 
     return { sqlString, data };
   }
 
   async getProductById(id: number) {
-    const sqlString = `SELECT ProductID AS Id, ProductName AS Name, s.CompanyName AS Supplier, QuantityPerUnit AS 'Qt per unit', UnitPrice AS 'Unit price', 
-UnitsInStock AS 'Units in stock', UnitsOnOrder AS 'Units on order', ReorderLevel AS 'Reorder level', Discontinued 
-FROM Products AS p
-JOIN Suppliers AS s ON p.SupplierID = s.SupplierID 
-WHERE Id = ?;`;
-
-    const data = this.db
+    const queryTemp = this.db
       .select(products)
       .fields({
         Id: products.productId,
@@ -71,17 +65,19 @@ WHERE Id = ?;`;
         Discontinued: products.discontinued,
       })
       .leftJoin(suppliers, eq(products.supplierId, suppliers.supplierId))
-      .where(eq(products.productId, id))
-      .all();
+      .where(eq(products.productId, id));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`'ProductID' = ?`, `'ProductID' = ${id}`);
 
     return { sqlString, data };
   }
 
   getSearchProducts = async (value: string) => {
-    const sqlString = `SELECT ProductID AS Id, ProductName AS Name, QuantityPerUnit AS 'Quantity Per Unit', UnitPrice AS Price, UnitsInStock AS Stock
-FROM Products
-WHERE Products.ProductName LIKE '%${value}%';`;
-    const data = this.db
+    const queryTemp = this.db
       .select(products)
       .fields({
         Id: products.productId,
@@ -90,8 +86,13 @@ WHERE Products.ProductName LIKE '%${value}%';`;
         Price: products.unitPrice,
         Stock: products.unitsInStock,
       })
-      .where(like(products.productName, `%${value}%`))
-      .all();
+      .where(like(products.productName, `%${value}%`));
+
+    const data = queryTemp.all();
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw
+      .replace(/"/gm, "'")
+      .replace(`like ?`, `like %${value}%`);
 
     return {
       sqlString,
