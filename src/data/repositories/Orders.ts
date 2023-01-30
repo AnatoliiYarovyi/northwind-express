@@ -11,6 +11,9 @@ import { shippers } from '../tables/shippersTable';
 
 export class Orders {
   private db: BetterSQLite3Database = connecting();
+  private getOffset(limit: number, page: number): number {
+    return (page - 1) * limit;
+  }
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)
@@ -26,7 +29,7 @@ FROM Orders;`;
   }
 
   async getAllOrders(limit: number, page: number) {
-    const offset: number = (page - 1) * limit;
+    const offset = this.getOffset(page, limit);
     const sqlString = `SELECT o.OrderID AS Id, SUM(od.Quantity * p.UnitPrice* (1 - od.Discount)) AS 'Total Price', COUNT(od.OrderID) AS Products,
 SUM(od.Quantity) AS Quantity, ShippedDate AS Shipped, ShipName  AS 'Ship Name', ShipCity AS City, ShipCountry AS Country
 FROM Orders AS o
@@ -62,7 +65,7 @@ OFFSET ${offset};`;
   async orderInformationById(id: number) {
     const sqlString = getEmployeeOrder(id);
 
-    const data = await this.db
+    const data = this.db
       .select(orders)
       .fields({
         Id: orders.orderId,

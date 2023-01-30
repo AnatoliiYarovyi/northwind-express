@@ -7,11 +7,14 @@ import { employees } from '../tables/employeesTable';
 
 export class Employees {
   private db: BetterSQLite3Database = connecting();
+  private getOffset(limit: number, page: number): number {
+    return (page - 1) * limit;
+  }
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)
 FROM Employees;`;
-    const data = await this.db
+    const data = this.db
       .select(employees)
       .fields({
         RowCount: sql`count(${employees.employeeId})`.as<number>(),
@@ -22,13 +25,13 @@ FROM Employees;`;
   }
 
   async getAllEmployees(limit: number, page: number) {
-    const offset: number = (page - 1) * limit;
+    const offset = this.getOffset(page, limit);
     const sqlString = `SELECT EmployeeID AS Id, FirstName AS Name, LastName, Title, City, HomePhone AS Phone, Country  
 FROM Employees
 LIMIT ${limit}
 OFFSET ${offset};`;
 
-    const data = await this.db
+    const data = this.db
       .select(employees)
       .fields({
         Id: employees.employeeId,
@@ -53,7 +56,7 @@ HireDate AS 'Hire Date', Address, City, PostalCode AS 'Postal Code', Country, Ho
 FROM Employees 
 WHERE EmployeeID = ${id};`;
 
-    const data = await this.db
+    const data = this.db
       .select(employees)
       .fields({
         Id: employees.employeeId,
@@ -82,7 +85,7 @@ WHERE EmployeeID = ${id};`;
     const sqlString = `SELECT EmployeeID AS Id, FirstName, LastName 
 FROM Employees
 WHERE EmployeeID = ${id};`;
-    const employeeAcceptsReport = await this.db
+    const employeeAcceptsReport = this.db
       .select(employees)
       .fields({
         Id: employees.employeeId,

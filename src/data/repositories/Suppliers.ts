@@ -7,10 +7,13 @@ import { suppliers } from '../tables/suppliersTable';
 
 export class Suppliers {
   private db: BetterSQLite3Database = connecting();
+  private getOffset(limit: number, page: number): number {
+    return (page - 1) * limit;
+  }
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*) FROM Suppliers;`;
-    const data = await this.db
+    const data = this.db
       .select(suppliers)
       .fields({
         RowCount: sql`count(${suppliers.supplierId})`.as<number>(),
@@ -27,9 +30,8 @@ export class Suppliers {
   }
 
   async getAllSuppliers(limit: number, page: number) {
-    const offset: number = (page - 1) * limit;
-
-    const queryTemp = await this.db
+    const offset = this.getOffset(page, limit);
+    const queryTemp = this.db
       .select(suppliers)
       .fields({
         Id: suppliers.supplierId,
@@ -44,7 +46,6 @@ export class Suppliers {
 
     const { sql: sqlRaw } = queryTemp.toSQL();
     const sqlString = sqlRaw.replace(/"/gm, "'");
-    console.log(sqlString);
     const data = queryTemp.all();
 
     return { sqlString, data };
@@ -55,7 +56,7 @@ export class Suppliers {
 FROM Suppliers
 WHERE SupplierID = ${id};`;
 
-    const data = await this.db
+    const data = this.db
       .select(suppliers)
       .fields({
         Id: suppliers.supplierId,

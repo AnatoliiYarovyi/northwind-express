@@ -8,11 +8,14 @@ import { suppliers } from '../tables/suppliersTable';
 
 export class Products {
   private db: BetterSQLite3Database = connecting();
+  private getOffset(limit: number, page: number): number {
+    return (page - 1) * limit;
+  }
 
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)
 FROM Products;`;
-    const data = await this.db
+    const data = this.db
       .select(products)
       .fields({
         RowCount: sql`count(${products.productId})`.as<number>(),
@@ -23,13 +26,13 @@ FROM Products;`;
   }
 
   async getAllProducts(limit: number, page: number) {
-    const offset: number = (page - 1) * limit;
+    const offset = this.getOffset(page, limit);
     const sqlString = `SELECT ProductID AS Id, ProductName AS Name, QuantityPerUnit AS 'Qt per unit', UnitPrice AS Price, UnitsInStock AS Stock, UnitsOnOrder AS Orders 
 FROM Products
 LIMIT ${limit}
 OFFSET ${offset};`;
 
-    const data = await this.db
+    const data = this.db
       .select(products)
       .fields({
         Id: products.productId,
@@ -53,7 +56,7 @@ FROM Products AS p
 JOIN Suppliers AS s ON p.SupplierID = s.SupplierID 
 WHERE Id = ?;`;
 
-    const data = await this.db
+    const data = this.db
       .select(products)
       .fields({
         Id: products.productId,
@@ -78,7 +81,7 @@ WHERE Id = ?;`;
     const sqlString = `SELECT ProductID AS Id, ProductName AS Name, QuantityPerUnit AS 'Quantity Per Unit', UnitPrice AS Price, UnitsInStock AS Stock
 FROM Products
 WHERE Products.ProductName LIKE '%${value}%';`;
-    const data = await this.db
+    const data = this.db
       .select(products)
       .fields({
         Id: products.productId,
