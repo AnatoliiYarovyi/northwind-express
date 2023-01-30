@@ -9,8 +9,7 @@ export class Suppliers {
   private db: BetterSQLite3Database = connecting();
 
   async getRowCount() {
-    const sqlString = `SELECT COUNT(*)
-FROM Suppliers;`;
+    const sqlString = `SELECT COUNT(*) FROM Suppliers;`;
     const data = await this.db
       .select(suppliers)
       .fields({
@@ -18,18 +17,19 @@ FROM Suppliers;`;
       })
       .all();
 
+    const rawResp = this.db
+      .select(suppliers)
+      .fields({ RowCount: sql`count(${suppliers.supplierId})`.as<number>() })
+      .toSQL();
+    console.log(rawResp);
+
     return { sqlString, data };
   }
 
   async getAllSuppliers(limit: number, page: number) {
     const offset: number = (page - 1) * limit;
-    const sqlString = `SELECT SupplierID AS Id, CompanyName AS Company, ContactName AS Contact, 
-ContactTitle AS Title, City, Country 
-FROM Suppliers
-LIMIT ${limit}
-OFFSET ${offset};`;
 
-    const data = await this.db
+    const queryTemp = await this.db
       .select(suppliers)
       .fields({
         Id: suppliers.supplierId,
@@ -40,8 +40,12 @@ OFFSET ${offset};`;
         Country: suppliers.country,
       })
       .limit(limit)
-      .offset(offset)
-      .all();
+      .offset(offset);
+
+    const { sql: sqlRaw } = queryTemp.toSQL();
+    const sqlString = sqlRaw.replace(/"/gm, "'");
+    console.log(sqlString);
+    const data = queryTemp.all();
 
     return { sqlString, data };
   }

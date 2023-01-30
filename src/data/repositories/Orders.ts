@@ -3,6 +3,7 @@ import { BetterSQLite3Database } from 'drizzle-orm-sqlite/better-sqlite3';
 import { eq } from 'drizzle-orm/expressions';
 
 import { connecting } from '../../db/connecting';
+import { getEmployeeOrder, getEpmloyeById } from '../../db/queries/queries';
 import { orderDetails } from '../tables/orderDetailsTable';
 import { orders } from '../tables/ordersTable';
 import { products } from '../tables/productsTable';
@@ -14,7 +15,7 @@ export class Orders {
   async getRowCount() {
     const sqlString = `SELECT COUNT(*)
 FROM Orders;`;
-    const data = await this.db
+    const data = this.db
       .select(orders)
       .fields({
         RowCount: sql`count(${orders.orderId})`.as<number>(),
@@ -35,7 +36,7 @@ GROUP BY o.OrderID
 LIMIT ${limit}
 OFFSET ${offset};`;
 
-    const data = await this.db
+    const data = this.db
       .select(orders)
       .fields({
         Id: orders.orderId,
@@ -59,16 +60,7 @@ OFFSET ${offset};`;
   }
 
   async orderInformationById(id: number) {
-    const sqlString = `SELECT o.OrderID AS Id, CustomerID AS 'Customer Id', ShipName AS 'Ship Name', COUNT(od.OrderID) AS 'Total Products', 
-SUM(od.Quantity) AS 'Total Quantity', SUM(od.Quantity * p.UnitPrice * (1 - od.Discount)) AS 'Total Price', 
-SUM(od.Quantity * p.UnitPrice * od.Discount) AS 'Total Discount', s.CompanyName AS 'Ship Via', Freight, 
-OrderDate AS 'Order Date', RequiredDate AS 'Required Date', ShippedDate AS 'Shipped Date', ShipCity AS 'Ship City', 
-ShipRegion AS 'Ship Region', ShipPostalCode AS 'Ship Postal Code', ShipCountry AS 'Ship Country'
-FROM Orders AS o
-JOIN Shippers AS s ON o.ShipVia = s.ShipperID  
-JOIN OrderDetails AS od ON o.OrderID = od.OrderID
-JOIN Products AS p ON od.ProductID = p.ProductID
-WHERE Id = ${id};`;
+    const sqlString = getEmployeeOrder(id);
 
     const data = await this.db
       .select(orders)
@@ -102,14 +94,9 @@ WHERE Id = ${id};`;
   }
 
   async productsInOrderById(id: number) {
-    const sqlString = `SELECT em.EmployeeID AS Id, em.FirstName, em.LastName, em.Title, em.TitleOfCourtesy AS 'Title Of Courtesy', em.BirthDate AS 'Birth Date', 
-em.HireDate AS 'Hire Date', em.Address, em.City, em.PostalCode AS 'Postal Code', em.Country, em.HomePhone AS 'Home Phone', em.Extension, em.Notes, 
-em.ReportsTo AS 'Reports To', e.EmployeeID AS ReportEmployeeID, e.FirstName AS ReportFirstName, e.LastName AS ReportLastName
-FROM Employees AS em
-JOIN Employees AS e ON em.ReportsTo= e.EmployeeID  
-WHERE em.EmployeeID = ${id};`;
+    const sqlString = getEpmloyeById(id);
 
-    const data = await this.db
+    const data = this.db
       .select(orders)
       .fields({
         Id: orders.orderId,

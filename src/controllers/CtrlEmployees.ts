@@ -34,16 +34,16 @@ export class CtrlEmployees {
     const { sqlString, data } = await employees.getAllEmployees(+limit, +page);
     const duration = metrics.getTimeInterval(triggerDate);
 
-    const changedName: AllEmployees = data.reduce((acc: AllEmployees, el) => {
-      acc.push({
-        Id: el.Id,
-        Name: `${el.FirstName} ${el.LastName}`,
-        Title: el.Title,
-        City: el.City,
-        Phone: el.Phone,
-        Country: el.Country,
+    const changedName: AllEmployees = data.reduce((employees: AllEmployees, employee) => {
+      employees.push({
+        Id: employee.Id,
+        Name: `${employee.FirstName} ${employee.LastName}`,
+        Title: employee.Title,
+        City: employee.City,
+        Phone: employee.Phone,
+        Country: employee.Country,
       });
-      return acc;
+      return employees;
     }, []);
 
     const typedDataResponse: TypedDataResponse<AllEmployees> = {
@@ -67,7 +67,7 @@ export class CtrlEmployees {
     const { sqlString, data } = await employees.getEmployeeById(id);
 
     let changedName: [] | EmployeeById;
-    if (data[0] === undefined) {
+    if (!data[0]) {
       changedName = [];
     } else {
       const { ReportsToId } = data[0];
