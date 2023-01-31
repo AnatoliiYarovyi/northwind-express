@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 
 import { Suppliers } from '../data/repositories/Suppliers';
 import { metrics } from './metrics';
-import { RowCount, TypedDataResponse } from '../interfeces/Ctrl';
-import { AllSuppliers, SupplierById } from '../interfeces/CtrlSuppliers';
+import { RowCount, TypedDataResponse } from '../interfaces/Ctrl';
+import { AllSuppliers, SupplierById } from '../interfaces/CtrlSuppliers';
 
 const suppliers = new Suppliers();
 

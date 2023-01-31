@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 
 import { Customers } from '../data/repositories/Customers';
 import { metrics } from './metrics';
-import { TypedDataResponse, RowCount } from '../interfeces/Ctrl';
-import { AllCustomers, CustomersById } from '../interfeces/CtrlCustomers';
+import { TypedDataResponse, RowCount } from '../interfaces/Ctrl';
+import { AllCustomers, CustomersById } from '../interfaces/CtrlCustomers';
 
 const customers = new Customers();
 

@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 
 import { Products } from '../data/repositories/Products';
 import { metrics } from './metrics';
-import { RowCount, TypedDataResponse } from '../interfeces/Ctrl';
+import { RowCount, TypedDataResponse } from '../interfaces/Ctrl';
 import {
   AllProducts,
   ProductById,
   SearchProducts,
-} from '../interfeces/CtrlProducts';
+} from '../interfaces/CtrlProducts';
 
 const products = new Products();
 

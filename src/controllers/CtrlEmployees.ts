@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 
 import { Employees } from '../data/repositories/Employees';
 import { metrics } from './metrics';
-import { TypedDataResponse, RowCount } from '../interfeces/Ctrl';
-import { AllEmployees, EmployeeById } from '../interfeces/CtrlEmployees';
+import { TypedDataResponse, RowCount } from '../interfaces/Ctrl';
+import { AllEmployees, EmployeeById } from '../interfaces/CtrlEmployees';
 
 const employees = new Employees();
 
@@ -34,17 +34,20 @@ export class CtrlEmployees {
     const { sqlString, data } = await employees.getAllEmployees(+limit, +page);
     const duration = metrics.getTimeInterval(triggerDate);
 
-    const changedName: AllEmployees = data.reduce((employees: AllEmployees, employee) => {
-      employees.push({
-        Id: employee.Id,
-        Name: `${employee.FirstName} ${employee.LastName}`,
-        Title: employee.Title,
-        City: employee.City,
-        Phone: employee.Phone,
-        Country: employee.Country,
-      });
-      return employees;
-    }, []);
+    const changedName: AllEmployees = data.reduce(
+      (employees: AllEmployees, employee) => {
+        employees.push({
+          Id: employee.Id,
+          Name: `${employee.FirstName} ${employee.LastName}`,
+          Title: employee.Title,
+          City: employee.City,
+          Phone: employee.Phone,
+          Country: employee.Country,
+        });
+        return employees;
+      },
+      [],
+    );
 
     const typedDataResponse: TypedDataResponse<AllEmployees> = {
       duration,

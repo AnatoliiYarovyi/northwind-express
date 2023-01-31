@@ -2,13 +2,13 @@ import { Request, Response } from 'express';
 
 import { Orders } from '../data/repositories/Orders';
 import { metrics } from './metrics';
-import { RowCount, TypedDataResponse } from '../interfeces/Ctrl';
+import { RowCount, TypedDataResponse } from '../interfaces/Ctrl';
 import {
   AllOrders,
   OrderInformation,
   OrderInformationById,
   ProductsInOrder,
-} from '../interfeces/CtrlOrders';
+} from '../interfaces/CtrlOrders';
 
 const orders = new Orders();
 
